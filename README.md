@@ -13,7 +13,7 @@ npm install django-form-component
 `index.js`
 
 ```js
-import django-form-component
+import "django-form-component"
 ```
 
 `index.html`
