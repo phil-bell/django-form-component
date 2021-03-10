@@ -1,6 +1,8 @@
 # django-form-component
 
-`django-form-component` is a Web Component wrapper for [Django Forms](https://docs.djangoproject.com/en/3.1/topics/forms/#the-template) using in templates.
+`django-form` is a Web Component wrapper for [Django Forms](https://docs.djangoproject.com/en/3.1/topics/forms/#the-template)
+
+`django-form` uses js fetch to submit the forms to your api endpoint of choise instead of the traditional django forms functionality of submitting the entire page.
 
 ### Install
 
