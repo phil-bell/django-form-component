@@ -27,7 +27,9 @@ import django-form-component
 ### Attributes
 
 `action` - the url/api you are sending the form to
-`method` - the request type you'd like, eg `post` `get` `put`. Default is `post`
-`button` - the text that will be on the submit button, default being `Add`
+
+`method` - the request type you'd like, eg `post` `get` `put`. Default - `post`
+
+`button` - the text that will be on the submit button. Default - `Add`
 
 You then place you Django form in the slot like seen above and it will be used by the components.
