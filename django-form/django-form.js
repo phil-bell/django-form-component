@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit-element";
 import Cookies from "js-cookie";
 
-export class SlumForm extends LitElement {
+export class DjangoForm extends LitElement {
   static get properties() {
     return {
       method: {
@@ -22,7 +22,7 @@ export class SlumForm extends LitElement {
   constructor() {
     super();
     this.button = "Add";
-    this.method = "post"
+    this.method = "post";
   }
 
   async handleSubmit(event) {
@@ -48,4 +48,4 @@ export class SlumForm extends LitElement {
   }
 }
 
-customElements.define("slum-form", SlumForm);
+customElements.define("django-form", DjangoForm);
