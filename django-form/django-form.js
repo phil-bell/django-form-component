@@ -22,6 +22,7 @@ export class SlumForm extends LitElement {
   constructor() {
     super();
     this.button = "Add";
+    this.method = "post"
   }
 
   async handleSubmit(event) {
