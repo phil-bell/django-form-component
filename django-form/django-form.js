@@ -16,6 +16,13 @@ export class DjangoForm extends LitElement {
         type: String,
         attribute: "button",
       },
+      successMessage: {
+        type: String,
+        attribute: "success-message",
+      },
+      success: {
+        type: Boolean,
+      },
     };
   }
 
@@ -23,26 +30,80 @@ export class DjangoForm extends LitElement {
     super();
     this.button = "Add";
     this.method = "post";
+    this.successMessage = "saved";
+    this.success = false;
+  }
+
+  get form() {
+    this.inputs = this.querySelectorAll("input, textarea, select");
+    let form = new Object();
+    [...this.inputs].forEach((input) => (form[input.name] = input.value));
+    return JSON.stringify(form);
+  }
+
+  errorMessage(message) {
+    const error = document.createElement("p");
+    error.innerText = message;
+    error.classList.add("django-form__field-error");
+    return error;
+  }
+
+  clearErrors() {
+    const errors = document.querySelectorAll(".django-form__field-error");
+    if (errors) {
+      errors.forEach((element) => element.remove());
+    }
+  }
+
+  async renderErrors(errors) {
+    Object.entries(errors).map(([field, error]) => {
+      let input = document.querySelector(`#id_${field}`);
+      if (input) {
+        input.after(this.errorMessage(error));
+        return;
+      }
+      this.shadowRoot
+        .querySelector(".django-form__fallback-errors")
+        .appendChild(this.errorMessage(error));
+    });
+  }
+
+  async sendForm() {
+    this.clearErrors();
+    let res = await fetch(this.action, {
+      method: this.method,
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": Cookies.get("csrftoken"),
+      },
+      body: this.form,
+    }).then(async (response) => {
+      if (response.status !== 200) {
+        const res_errors = await response.json();
+        this.renderErrors(res_errors);
+        return
+      }
+      this.success = true;
+    });
+    return res;
   }
 
   async handleSubmit(event) {
     event.preventDefault();
-    const form = new FormData(event.target);
-    await fetch(this.action, {
-      method: this.method,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-      body: form,
-    });
+    this.sendForm();
   }
 
   render() {
     return html`
-      <form @submit=${this.handleSubmit}>
+      <form class="django-form" @submit=${this.handleSubmit}>
         <slot></slot>
-        <button type="submit">${this.button}</button>
+        <button class="django-form__submit-button" type="submit">
+          ${this.button}
+        </button>
+        <p ?hidden="${!this.success}" class="django-form__success-message">
+          ${this.successMessage}
+        </p>
+        <div class="django-form__fallback-errors"></div>
       </form>
     `;
   }

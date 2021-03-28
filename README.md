@@ -1,37 +1,107 @@
-# django-form-component
+# `django-form-component`
 
 `django-form` is a Web Component wrapper for [Django Forms](https://docs.djangoproject.com/en/3.1/topics/forms/#the-template)
 
-`django-form` uses js fetch to submit the forms to your api endpoint of choise instead of the traditional django forms functionality of submitting the entire page.
+`django-form` uses js fetch to submit the forms to your api endpoint of choice instead of the traditional django forms functionality of submitting the entire page.
 
-### Install
+This allows you have the benefits of modern responsive web pages but keep the dependency and security of Django forms.
+
+## `Install`
 
 ```
 npm install django-form-component
 ```
 
-### Usage
+## `Usage`
 
 `index.js`
 
 ```js
-import "django-form-component"
+import "django-form-component";
 ```
 
 `index.html`
 
 ```html
-<django-form action="api/send/" method="post" button="send">
+<django-form
+  action="api/send/"
+  method="post"
+  button="send"
+  success-message="success"
+>
   {{ send_form.as_p }}
 </django-form>
 ```
 
-### Attributes
+## `Attributes`
 
-`action` - the url/api you are sending the form to
+### `action`
 
-`method` - the request type you'd like, eg `post` `get` `put`. Default - `post`
+the url/api you are sending the form to
 
-`button` - the text that will be on the submit button. Default - `Add`
+### `method`
 
-You then place you Django form in the slot like seen above and it will be used by the components.
+default - `post`
+
+the request type you'd such as `post` `get` `put`
+
+### `button`
+
+default - `Add`
+
+the text that will be on the submit button
+
+### `success-message`
+
+default - `Saved`
+
+the text shown on successful form submission
+
+## `Extending`
+
+### `Styling`
+
+If want to extend and add styling to the form, you can use `lit-element` to add a styles method. The classes available for styling are:
+
+- `.django-form`
+- `.django-form__submit-button`
+- `.django-form__success-message`
+- `.django-form__field-error`
+- `.django-form__fallback-errors`
+
+```js
+import { css } from "lit-element";
+import { DjangoForm } from "django-form-component";
+
+export class ReviewForm extends DjangoForm {
+  static get styles() {
+    return css`
+      .django-form__field-error,
+      .django-form__fallback-errors {
+        color: red;
+      }
+    `;
+  }
+}
+
+customElements.define("review-form", ReviewForm);
+```
+
+If you would like to add similar BEM classes to the django form, you can
+
+### `Response handling`
+
+Say your backend sends back some `data` on success and you want to do something with that. You can override the `sendForm` method to get the response of which you can do with what you want
+
+```js
+import { DjangoForm } from "django-form-component";
+
+export class ReviewForm extends DjangoForm {
+  sendForm() {
+    let res = super.sendForm();
+    alert(`Backend says: ${res.data}`);
+  }
+}
+
+customElements.define("review-form", ReviewForm);
+```
