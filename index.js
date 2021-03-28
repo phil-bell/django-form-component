@@ -1,1 +1,1 @@
-import "./django-form/django-form.js"
+export { DjangoForm } from "django-form-component/django-form/django-form.js";
