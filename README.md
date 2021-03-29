@@ -61,13 +61,17 @@ the text shown on successful form submission
 
 ### `Styling`
 
-If want to extend and add styling to the form, you can use `lit-element` to add a styles method. The classes available for styling are:
+The built in relevant style tags are as follow:
 
-- `.django-form`
-- `.django-form__submit-button`
-- `.django-form__success-message`
 - `.django-form__field-error`
-- `.django-form__fallback-errors`
+- `django-form::part(django-form)`
+- `django-form::part(django-form__submit-button)`
+- `django-form::part(django-form__success-message)`
+- `django-form::part(django-form__fallback-errors)`
+
+**Note** that elements that are in the slot use classes and ones in the shadowDom have `::part` attributes.
+
+If want to extend and add styling to the form, you can use `lit-element` to add a styles method.
 
 ```js
 import { css } from "lit-element";
@@ -76,9 +80,11 @@ import { DjangoForm } from "django-form-component";
 export class ReviewForm extends DjangoForm {
   static get styles() {
     return css`
-      .django-form__field-error,
-      .django-form__fallback-errors {
+      slotted(p) {
         color: red;
+      }
+      form {
+        display: flex;
       }
     `;
   }
@@ -87,7 +93,17 @@ export class ReviewForm extends DjangoForm {
 customElements.define("review-form", ReviewForm);
 ```
 
-If you would like to add similar BEM classes to the django form, you can
+This component also supports `::part`, so you can do something like this in your `.css` file:
+
+```css
+.django-form__field-error {
+  color: red;
+}
+
+django-form::part(django-form__submit-button) {
+  background-color: aquamarine;
+}
+```
 
 ### `Response handling`
 
