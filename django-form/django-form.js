@@ -49,7 +49,9 @@ export class DjangoForm extends LitElement {
   }
 
   clearErrors() {
-    const errors = document.querySelectorAll(".django-form__field-error");
+    const errors = document.querySelectorAll(
+      '.django-form__field-error, [part="django-form__fallback-error"]'
+    );
     if (errors) {
       errors.forEach((element) => element.remove());
     }
@@ -63,7 +65,7 @@ export class DjangoForm extends LitElement {
         return;
       }
       this.shadowRoot
-        .querySelector(".django-form__fallback-errors")
+        .querySelector('[part="django-form__fallback-error"]')
         .appendChild(this.errorMessage(error));
     });
   }
@@ -81,7 +83,7 @@ export class DjangoForm extends LitElement {
       if (response.status !== 200) {
         const res_errors = await response.json();
         this.renderErrors(res_errors);
-        return
+        return;
       }
       this.success = true;
     });
@@ -95,15 +97,15 @@ export class DjangoForm extends LitElement {
 
   render() {
     return html`
-      <form class="django-form" @submit=${this.handleSubmit}>
+      <form part="django-form" @submit=${this.handleSubmit}>
         <slot></slot>
-        <button class="django-form__submit-button" type="submit">
+        <button part="django-form__submit-button" type="submit">
           ${this.button}
         </button>
-        <p ?hidden="${!this.success}" class="django-form__success-message">
+        <p ?hidden="${!this.success}" part="django-form__success-message">
           ${this.successMessage}
         </p>
-        <div class="django-form__fallback-errors"></div>
+        <div part="django-form__fallback-error"></div>
       </form>
     `;
   }
