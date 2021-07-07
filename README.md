@@ -57,29 +57,39 @@ default - `Saved`
 
 the text shown on successful form submission
 
+### `headers`
+
+default = `{
+    "Content-Type": "application/json",
+    "X-CSRFToken": Cookies.get("csrftoken"),
+  }`
+
+headers used in the fetch request
+
 ## `Extending`
 
 ### `Styling`
 
 The built in relevant style tags are as follow:
 
-- `.django-form__field-error`
+- `.django-form__error--field`
 - `django-form::part(django-form)`
-- `django-form::part(django-form__submit-button)`
-- `django-form::part(django-form__success-message)`
-- `django-form::part(django-form__fallback-errors)`
+- `django-form::part(django-form__button--submit)`
+- `django-form::part(django-form__message--success)`
+- `django-form::part(django-form__error--generic)`
 
-**Note** that elements that are in the slot use classes and ones in the shadowDom have `::part` attributes.
+**Note** that elements that are in the slot use classes but elements in the shadowDom have `::part` attributes.
 
-If want to extend and add styling to the form, you can use `lit-element` to add a styles method.
+If want to extend and add styling to the form, you can use `lit` to add styles like so:
 
 ```js
-import { css } from "lit-element";
+import { customElement } from "lit/decorators.js";
+import { css } from "lit";
 import { DjangoForm } from "django-form-component";
 
+@customElement("review-form")
 export class ReviewForm extends DjangoForm {
-  static get styles() {
-    return css`
+  static styles = css`
       slotted(p) {
         color: red;
       }
@@ -89,18 +99,18 @@ export class ReviewForm extends DjangoForm {
     `;
   }
 }
-
-customElements.define("review-form", ReviewForm);
 ```
 
 This component also supports `::part`, so you can do something like this in your `.css` file:
 
 ```css
-.django-form__field-error {
+/* styling the slot */
+.django-form__error--field {
   color: red;
 }
 
-django-form::part(django-form__submit-button) {
+/* styling the shadowDom */
+django-form::part(django-form__button--submit) {
   background-color: aquamarine;
 }
 ```
@@ -110,14 +120,14 @@ django-form::part(django-form__submit-button) {
 Say your backend sends back some `data` on success and you want to do something with that. You can override the `sendForm` method to get the response of which you can do with what you want
 
 ```js
+import { customElement } from "lit/decorators.js";
 import { DjangoForm } from "django-form-component";
 
+@customElement("review-form")
 export class ReviewForm extends DjangoForm {
-  sendForm() {
-    let res = super.sendForm();
+  async sendForm() {
+    const res = await super.sendForm();
     alert(`Backend says: ${res.data}`);
   }
 }
-
-customElements.define("review-form", ReviewForm);
 ```
