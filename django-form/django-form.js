@@ -139,6 +139,6 @@ export class DjangoForm extends LitElement {
 
   /* render */
   render() {
-    return html` ${this.renderForm()} `;
+    return html` ${this.formTemplate()} `;
   }
 }
