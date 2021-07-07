@@ -1,6 +1,6 @@
 {
   "name": "django-form-component",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Web component wrapper for Django forms.",
   "main": "index.js",
   "scripts": {

@@ -19,7 +19,7 @@ export class DjangoForm extends LitElement {
   method = "post";
 
   @property({ type: String })
-  action = "";
+  action;
 
   @property({ type: String })
   button = "Add";
