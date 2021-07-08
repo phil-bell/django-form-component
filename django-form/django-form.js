@@ -1,114 +1,144 @@
-import { LitElement, html } from "lit-element";
+import { LitElement, html } from "lit";
+import { customElement, property, query, queryAll } from "lit/decorators.js";
 import Cookies from "js-cookie";
 
+@customElement("django-form")
 export class DjangoForm extends LitElement {
-  static get properties() {
-    return {
-      method: {
-        type: String,
-        attribute: "method",
-      },
-      action: {
-        type: String,
-        attribute: "action",
-      },
-      button: {
-        type: String,
-        attribute: "button",
-      },
-      successMessage: {
-        type: String,
-        attribute: "success-message",
-      },
-      success: {
-        type: Boolean,
-      },
-    };
+  /* Queries */
+  @query('[part="django-form__error--generic"]')
+  fallbackError;
+
+  @queryAll("input, textarea, select")
+  inputs;
+
+  @queryAll('.django-form__error--field, [part="django-form__error--generic"]')
+  errors;
+
+  /* Properties */
+  @property({ type: String })
+  method = "post";
+
+  @property({ type: String })
+  action;
+
+  @property({ type: String })
+  button = "Add";
+
+  @property({ type: String, attribute: "success-message" })
+  successMessage = "saved";
+
+  @property({ type: Boolean })
+  success = false;
+
+  @property({ type: Object })
+  headers = {
+    "Content-Type": "application/json",
+    "X-CSRFToken": Cookies.get("csrftoken"),
+  };
+
+  @property({ type: Object, attribute: false})
+  form = JSON.stringify(
+    [...this.inputs].forEach((input) => (form[input.name] = input.value))
+  );
+
+  /* Events */
+  @eventOptions({ passive: true })
+  handleSubmit() {
+    this.sendForm();
   }
 
-  constructor() {
-    super();
-    this.button = "Add";
-    this.method = "post";
-    this.successMessage = "saved";
-    this.success = false;
+  /* Internal methods */
+  _fetch() {
+    return fetch(this.action, {
+      method: this.method,
+      headers: this.headers,
+      body: this.form,
+    });
   }
 
-  get form() {
-    this.inputs = this.querySelectorAll("input, textarea, select");
-    let form = new Object();
-    [...this.inputs].forEach((input) => (form[input.name] = input.value));
-    return JSON.stringify(form);
-  }
-
-  errorMessage(message) {
-    const error = document.createElement("p");
-    error.innerText = message;
-    error.classList.add("django-form__field-error");
-    return error;
-  }
-
+  /* Methods */
   clearErrors() {
-    const errors = document.querySelectorAll(
-      '.django-form__field-error, [part="django-form__fallback-error"]'
-    );
-    if (errors) {
-      errors.forEach((element) => element.remove());
-    }
+    this.errors && this.errors.forEach((element) => element.remove());
   }
 
-  async renderErrors(errors) {
+  renderErrors(errors) {
     Object.entries(errors).map(([field, error]) => {
-      let input = document.querySelector(`#id_${field}`);
+      const input = document.querySelector(`#id_${field}`);
       if (input) {
-        input.after(this.errorMessage(error));
+        input.after(this.fieldErrorTemplate(error));
         return;
       }
-      this.shadowRoot
-        .querySelector('[part="django-form__fallback-error"]')
-        .appendChild(this.errorMessage(error));
+      this.genericErrors = this.genericErrorTemplate(error);
     });
+  }
+
+  /* Async methods */
+  async handleError(res) {
+    const errors = await res.json();
+    this.renderErrors(errors);
   }
 
   async sendForm() {
     this.clearErrors();
-    let res = await fetch(this.action, {
-      method: this.method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": Cookies.get("csrftoken"),
-      },
-      body: this.form,
-    }).then(async (response) => {
-      if (response.status !== 200) {
-        const res_errors = await response.json();
-        this.renderErrors(res_errors);
-        return;
+    try {
+      const res = await this._fetch();
+      if (!res.ok) {
+        throw new Error(res.error);
       }
       this.success = true;
-    });
+    } catch {
+      this.handleError(res);
+    }
     return res;
   }
 
-  async handleSubmit(event) {
-    event.preventDefault();
-    this.sendForm();
+  /* Templates */
+  fieldErrorTemplate(message) {
+    return html`<p class="django-form__error--field">${message}</p>`;
   }
 
-  render() {
+  genericErrorTemplate(message) {
+    html`
+      ${this.genericErrors}
+      <p part="django-form__error--generic">${message}</p>
+    `;
+  }
+
+  buttonTemplate() {
+    return html`
+      <button part="django-form__button--submit" type="submit">
+        ${this.button}
+      </button>
+    `;
+  }
+
+  messageTemplate() {
+    return html`<p
+      ?hidden="${!this.success}"
+      part="django-form__message--success"
+    >
+      ${this.successMessage}
+    </p>`;
+  }
+
+  errorTemplate() {
+    return html`
+      ${this.genericErrors}
+    `;
+  }
+
+  formTemplate() {
     return html`
       <form part="django-form" @submit=${this.handleSubmit}>
         <slot></slot>
-        <button part="django-form__submit-button" type="submit">
-          ${this.button}
-        </button>
-        <p ?hidden="${!this.success}" part="django-form__success-message">
-          ${this.successMessage}
-        </p>
-        <div part="django-form__fallback-error"></div>
+        ${this.buttonTemplate()} ${this.messageTemplate()}
+        ${this.errorTemplate()}
       </form>
     `;
   }
-}
 
-customElements.define("django-form", DjangoForm);
+  /* render */
+  render() {
+    return html` ${this.formTemplate()} `;
+  }
+}
